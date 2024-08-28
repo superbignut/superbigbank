@@ -1,8 +1,9 @@
-from bigCore import Strategy
+from bigCore import Strategy, SignalEvent
 from queue import  Queue
 from bigCsvData import CsvDataHandler
 
 import random
+import time
 
 class RandomStrategy(Strategy):
 
@@ -13,9 +14,13 @@ class RandomStrategy(Strategy):
     def on_market_event(self, event):
         """process function"""
         if event.type == "MARKET":
-            pass
+            # print("##################### Strategy Simulation Generation ########################")
+            current_data = self._data_handler.get_current_bar()
+            print("### strategy on_market_event ###", 'open price is: ', current_data['open'], time.ctime(time.time())[11:-5])
 
+            signal_event = SignalEvent(symbol='IF', timestamp=time.time(), signal_direction=0)
 
+            self._event_queue.put(signal_event) # 消耗 MARKET 生成 SIGNAL
 
 if __name__ == '__main__':
     q = Queue()

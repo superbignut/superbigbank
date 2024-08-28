@@ -27,7 +27,7 @@ class CsvDataHandler(DataHandler):
             while self._cursor < len(self._data):
                 self._event_queue.put(MarketEvent()) # 把一个数据对象放到queue 中,因为这是csv 所以暂时没有处理
                 self._cursor += 1
-                print("##################### Market Simulation Generation ########################")
+                print("\n#### Market Simulation Generation ###", time.ctime(time.time())[11:-5])
                 time.sleep(self._duration) # sleep 一段时间
 
         temp_thread = threading.Thread(target=__run) # 传递调用对象

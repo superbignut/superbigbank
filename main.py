@@ -1,12 +1,12 @@
-import queue
-
+from bigEasyExecutor import EasyExecutor
+from bigEasyPortfolio import EasyPortfolio
 from bigTsData import TsData
 from bigExecute import *
 from bigCsvData import CsvDataHandler
 from bigRandomStrategy import RandomStrategy
 import os
 import sys
-from queue import Queue
+import queue
 
 # 获取数据 MyData       done
 # 简单策略 MyStrategy   none
@@ -17,38 +17,24 @@ from queue import Queue
 
 
 
-event_queue = Queue() # 事件队列
+event_queue = queue.Queue() # 事件队列
 
-data_handler = CsvDataHandler(event_queue=event_queue,file_name='local_data/IF.csv') # 创建事件对象
+data_handler = CsvDataHandler(event_queue=event_queue,file_name='local_data/IF.csv') # 创建事件对象，描述数据来源
 
-strategy = RandomStrategy(event_queue=event_queue, data_handler=data_handler) # 创建策略对象
+strategy = RandomStrategy(event_queue=event_queue, data_handler=data_handler) # 创建策略对象，描述自己的策略
+
+portfolio = EasyPortfolio(event_queue=event_queue, data_handler=data_handler) # 创建组合对象，描述自己的资本
+
+executor = EasyExecutor(event_queue=event_queue, data_handler=data_handler) # 创建交易对象， 完成实际交易
 
 
-class MyQuant:
-    def __init__(self):
-        """
-        数据初始化
-        策略初始化
-        运行初始化
-        """
-        self.data = TsData()    # 数据初始化
-        self.ceo = None         # 执行交易ceo
-
-        self.last_price = None
-        self.current_price = None
-        pass
-
-    def run(self):
-        if self.last_price is None:
-            self.last_price = self.data.get_recent_data()['ASK']
-            self.current_price = self.data.get_recent_data()['ASK']
-            return
-        else:
-            self.last_price = self.current_price
-            self.current_price = self.data.get_recent_data()['ASK']
 
 
 if __name__ == '__main__':
+    print("Compile Successfully!")
+
+    data_handler.run() # 启动数据接口
+
     while True:
         try:
             event = event_queue.get(block=True, timeout=3)
@@ -59,16 +45,14 @@ if __name__ == '__main__':
             strategy.on_market_event(event) # 调用策略对象的处理函数
 
         elif event.type == 'SIGNAL':
-            pass
-        elif event.type == 'ORDER':
-            pass
-        elif event.type == 'FILL':
-            pass
+            portfolio.on_signal_event(event) # 调用投资组合对象处理订单
 
-    print("@@")
-    print("Current python's Version is: ", sys.version)
-    print("Compile Successfully!")
-    print("@@")
+        elif event.type == 'ORDER':
+            executor.on_order_event(event)
+
+        elif event.type == 'FILL':
+            portfolio.on_fill_event(event)
+
 
 
 
