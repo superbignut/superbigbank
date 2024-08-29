@@ -47,5 +47,5 @@ class CsvDataHandler(DataHandler):
 
 if __name__ == '__main__':
     q = Queue()
-    a = CsvDataHandler(event_queue=q, file_name='local_data/IF.csv', duration=1)
+    a = CsvDataHandler(event_queue=q, file_name='../local_data/IF.csv', duration=1)
     a.run()

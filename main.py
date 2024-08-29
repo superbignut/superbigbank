@@ -1,27 +1,14 @@
-from bigEasyExecutor import EasyExecutor
-from bigEasyPortfolio import EasyPortfolio
-from bigTsData import TsData
-from bigExecute import *
-from bigCsvData import CsvDataHandler
-from bigRandomStrategy import RandomStrategy
-import os
-import sys
+from bigExecutor import EasyExecutor
+from bigPortfolio import EasyPortfolio
+from bigData import CsvDataHandler
+from bigStrategy import EasyStrategy
 import queue
-
-# 获取数据 MyData       done
-# 简单策略 MyStrategy   none
-# 交易准备 MyOrder
-# 执行交易 MyExecute
-# 更新持仓 MyFill
-# 不断优化 ...
-
-
 
 event_queue = queue.Queue() # 事件队列
 
 data_handler = CsvDataHandler(event_queue=event_queue,file_name='local_data/IF.csv') # 创建事件对象，描述数据来源
 
-strategy = RandomStrategy(event_queue=event_queue, data_handler=data_handler) # 创建策略对象，描述自己的策略
+strategy = EasyStrategy(event_queue=event_queue, data_handler=data_handler) # 创建策略对象，描述自己的策略
 
 portfolio = EasyPortfolio(event_queue=event_queue, data_handler=data_handler) # 创建组合对象，描述自己的资本
 

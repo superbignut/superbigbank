@@ -3,7 +3,7 @@
 
 import tushare as ts
 
-class TsData:
+class TsDataHandler:
     def __init__(self):
         """
         tushare 数据的初始化
@@ -88,5 +88,5 @@ class TsData:
 """
 
 if __name__ == '__main__':
-    _data = TsData()
+    _data = TsDataHandler()
     print(_data.get_recent_data())

@@ -37,16 +37,12 @@ class Event:
     pass
 
 class MarketEvent(Event):
-    """
-    从数据接口获得数据后生成 market 事件
-    """
+    """Generate MarketEvent by DataHandler when calling DataHandler.run()"""
     def __init__(self):
         self.type = "MARKET"
 
 class SignalEvent(Event):
-    """
-    由策略 生成的 交易信号 :总持仓 100
-    """
+    """Consume MarketEvent() and Generate SignalEvent() by Strategy.on_market_event()"""
     def __init__(self, symbol, timestamp, signal_direction):
         self.type = "SIGNAL"
         self.symbol = symbol
@@ -58,9 +54,7 @@ class SignalEvent(Event):
 
 
 class OrderEvent(Event):
-    """
-    根据实际的情况 和 交易信号 可以交易的金额或数量 : 已有20， 再加仓80
-    """
+    """Consume SignalEvent() and Generate OrderEvent() by Portfolio.on_signal_event()"""
     def __init__(self, symbol, timestamp, order_type, direction, quantity, price=0.0):
         self.type = "ORDER"
         self.symbol = symbol
@@ -69,8 +63,7 @@ class OrderEvent(Event):
         self.price = price
 
 class FillEvent(Event):
-    """
-    得到的真实成交的金额或数量 : 只成功交易70
-    """
+    """Consume OrderEvent() and Generate FillEvent() by Executor.on_order_event()"""
+    """FillEvent is then consumed by portfolio.on_fill_event()"""
     def __init__(self, symbol, timestamp, direction, quantity, price, commission, fill_flag):
         self.type = "FILL"
