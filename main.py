@@ -9,7 +9,7 @@ class A:
     def func(self):
         return self._word
 
-
+    
     # func = property(fget=func)
     print(type(func))
 
