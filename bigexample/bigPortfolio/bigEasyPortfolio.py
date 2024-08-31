@@ -1,4 +1,4 @@
-from bigCore import Portfolio, OrderEvent
+from bigexample.bigCore import Portfolio, OrderEvent
 import time
 
 class EasyPortfolio(Portfolio):

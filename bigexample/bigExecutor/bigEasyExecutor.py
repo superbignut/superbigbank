@@ -1,4 +1,4 @@
-from bigCore import Executor, FillEvent
+from bigexample.bigCore import Executor, FillEvent
 import time
 
 class EasyExecutor(Executor):

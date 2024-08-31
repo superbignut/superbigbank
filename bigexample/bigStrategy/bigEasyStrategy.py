@@ -1,6 +1,6 @@
-from bigCore import Strategy, SignalEvent
+from bigexample.bigCore import Strategy, SignalEvent
 from queue import  Queue
-from bigData.bigCsvData import CsvDataHandler
+from bigexample.bigData.bigCsvData import CsvDataHandler
 
 import time
 

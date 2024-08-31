@@ -1,4 +1,4 @@
-from bigCore import DataHandler, MarketEvent
+from bigexample.bigCore import DataHandler, MarketEvent
 from queue import Queue # 线程安全的队列
 import pandas as pd
 import os
