@@ -8,7 +8,11 @@ import time
 from . import basedata
 
 class Sina(basedata.BaseData):
+    
+    def __init__(self):
+        super().__init__()
 
+    
     @property
     def stock_api(self) -> str:
         pass

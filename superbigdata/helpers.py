@@ -12,6 +12,7 @@ def update_stock_codes()->list:
     if response.status_code != 200:
         raise RuntimeError
     stock_codes = re.findall(r'~([0-9a-z]*)`', response.text)
+    # 这里其实可以把中文名字一起读出来 Todo
     with open(STOCK_CODE_PATH,'w', encoding='utf8') as temp_f:
         temp_f.write(json.dumps({"stock": stock_codes}))
     return stock_codes
@@ -36,8 +37,16 @@ def get_stock_type(stock_code:str)->str:
     else:
         return 'sh' if stock_code.startswith(sh_head) else 'sz'
 
+def get_stock_list_with_type_prefix(stock_codes:list):
+    # 输入股票代号列表，返回带交易所的股票代码列表
+    return [get_stock_with_type_prefix(stock_code) for stock_code in stock_codes]
+
+def get_stock_with_type_prefix(stock_code:str)->str:
+    # 给股票代码号加上前缀
+    return get_stock_type(stock_code) + stock_code[-6:]
+
 if __name__ == '__main__':
-    print(get_stock_type('000519'))
+    print(get_stock_list_with_type_prefix(['600519', 'sz000001']))
 
 
 
