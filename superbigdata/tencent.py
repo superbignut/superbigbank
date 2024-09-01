@@ -1,7 +1,10 @@
 import re
 import time
+from functools import partial
+
 from basedata import BaseData
 from helpers import *
+import multiprocessing.pool
 
 class Tencent(BaseData):
 
@@ -20,5 +23,4 @@ class Tencent(BaseData):
 
 if __name__ == '__main__':
     te = Tencent()
-    ls = ["000001", "000002", "000003", "000004", "000005", "000006", "000007", "000008", "000009", "000010","000011"]
-    print(te.gen_stock_list(ls))
+    print(te.all_market())

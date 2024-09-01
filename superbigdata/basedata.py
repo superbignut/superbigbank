@@ -1,7 +1,7 @@
 import json
 import requests
 from abc import ABCMeta, abstractmethod
-
+import multiprocessing.pool
 from helpers import *
 
 
@@ -12,7 +12,7 @@ class BaseData(metaclass=ABCMeta):
     max_num = 10
     # 每次请求的最大股票数
 
-    # @property
+    @property
     @abstractmethod
     def stock_api(self) -> str:
         pass
@@ -21,12 +21,11 @@ class BaseData(metaclass=ABCMeta):
     def __init__(self):
         self._session = requests.sessions.Session()
         stock_codes = self.load_stock_codes()
-        self.stock_list = self.gen_stock_list(stock_codes) # 对股票代码进行分组
+        self.stock_group_with_prefix = self._generate_stock_group_with_prefix(stock_codes) # 对股票代码进行分组
 
-    def gen_stock_list(self, stock_codes : list) -> list:
-        # 根据 self.max_num 为每组长度 返回用‘,'连接的list[str,]
+    def _generate_stock_group_with_prefix(self, stock_codes : list) -> list:
+        # 根据 self.max_num 为每组长度 返回用‘,'连接的股票代码的 list[str,]
         # 举例 max_num = 2 : ['sh600519,sz000001', 'sh600619,sz000002']
-        # 对字符串进行分组的目的，是希望以组为单位对数据进行多进程获取
         stock_with_type_prefix = get_stock_list_with_type_prefix(stock_codes)
         if len(stock_with_type_prefix) <= self.max_num:
             request_list = ','.join(stock_with_type_prefix)
@@ -47,8 +46,9 @@ class BaseData(metaclass=ABCMeta):
             return json.load(temp_f)['stock']
 
 
-    def all_market(self):
-        pass
+    def all_market(self)->list[str]:
+        # 返回所有股票的行情数据
+        return self.get_stock_data(self.stock_group_with_prefix)
 
 
     def stocks(self):
@@ -59,10 +59,10 @@ class BaseData(metaclass=ABCMeta):
         pass
 
 
-    def get_stock_by_range(self, params):
+    def get_stock_by_web_api(self, params):
         # 根据不同的api 与 params 获取数据， 这里的params 应该就是 'sh600519,sz000001' 的字符串
         temp_headers = self._get_headers()
-        r = self._session.get(self.stock_api() + params , headers=temp_headers)
+        r = self._session.get(self.stock_api + params , headers=temp_headers)
         return r.text
 
 
@@ -72,12 +72,29 @@ class BaseData(metaclass=ABCMeta):
         return {"user-agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"}
 
 
-    def get_stock_data(self):
-        pass
+    def get_stock_data(self, stock_list_with_prefix:list[str]):
+        # 从web 中获取股票信息
+        temp_data = self._fetch_stock_data(stock_list_with_prefix)
+        return self._format_response_data(temp_data)
 
-    def _fetch_stock_data(self):
-        pass
+    def _fetch_stock_data(self, stock_list:list[str], method='mutil-process'):
+        # 从web 中获取股票信息
+        if method == 'mutil-process':
+            pool = multiprocessing.Pool(min(len(stock_list), os.cpu_count()))  # 使用多进程会造成 self 对象被赋值到每一个进程中，
+            # 具体可以体现在下面调用 get_stock_by_web_api 时 每个进程的 self均为不同的对象， 而多线程则是用一个对象
+        else:
+            pool = multiprocessing.pool.ThreadPool(min(len(stock_list), os.cpu_count()))  # 多线程
+        try:
+            ret = pool.map(self.get_stock_by_web_api, stock_list) # map 会阻塞代码，异步使用map_async
+        except:
+            pass
+        finally:
+            pool.close() # 不在对进程池中添加进程
+        return ret
 
+    @staticmethod
+    def _format_response_data(data):
+        return data
 
 if __name__ == '__main__':
     # print(BaseData.gen_stock_list( ) )
