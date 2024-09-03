@@ -2,19 +2,20 @@ import json
 import requests
 from abc import ABCMeta, abstractmethod
 import multiprocessing.pool
+
 from helpers import *
-
-
 
 class BaseData(metaclass=ABCMeta):
     # 行情获取基类
 
-    max_num = 10
+    max_num = 200
     # 每次请求的最大股票数
 
     @property
     @abstractmethod
     def stock_api(self) -> str:
+        # 所有的基类继承这个属性抽象成员函数，进而在子类的对象调用时使用子类的api
+        # 在 get_stock_by_web_api 中被调用
         pass
     # 获取行情的api地址
 
@@ -41,25 +42,36 @@ class BaseData(metaclass=ABCMeta):
 
     @staticmethod
     def load_stock_codes()->list:
-        # 简单的返回所有的股票代码，没有交易所前缀
+        # 从STOCK_CODE_PATH中加载股票代码，没有交易所前缀, 这里没有调用helpers 中的重新获取函数
+        # 如果 STOCK_CODE_PATH 中的数据是空的，可能要重新调用helpers.update_stock_codes()进行更新
         with open(STOCK_CODE_PATH) as temp_f:
             return json.load(temp_f)['stock']
 
 
-    def all_market(self)->list[str]:
+    def all_market(self):
         # 返回所有股票的行情数据
         return self.get_stock_data(self.stock_group_with_prefix)
 
 
-    def stocks(self):
-        pass
+    def stocks(self, stock_codes):
+        # 返回任意股票代码或列表的对应的实时数据, 前缀不是必须
+        return self._realtime_data(stock_codes)
+
+    def _realtime_data(self, stock_codes):
+        # 返回任意股票代码对应的实时数据, 前缀不是必须
+        if not isinstance(stock_codes, list):
+            stock_codes = [stock_codes, ]
+
+        stock_group_with_prefix = self._generate_stock_group_with_prefix(stock_codes)  # 对股票代码进行分组
+
+        return self.get_stock_data(stock_group_with_prefix)
 
 
     def market_snapshot(self):
         pass
 
 
-    def get_stock_by_web_api(self, params):
+    def get_stock_by_web_api(self, params:str)->str:
         # 根据不同的api 与 params 获取数据， 这里的params 应该就是 'sh600519,sz000001' 的字符串
         temp_headers = self._get_headers()
         r = self._session.get(self.stock_api + params , headers=temp_headers)
@@ -77,7 +89,7 @@ class BaseData(metaclass=ABCMeta):
         temp_data = self._fetch_stock_data(stock_list_with_prefix)
         return self._format_response_data(temp_data)
 
-    def _fetch_stock_data(self, stock_list:list[str], method='mutil-process'):
+    def _fetch_stock_data(self, stock_list:list[str], method='mutil-process')->list[str]:
         # 从web 中获取股票信息
         if method == 'mutil-process':
             pool = multiprocessing.Pool(min(len(stock_list), os.cpu_count()))  # 使用多进程会造成 self 对象被赋值到每一个进程中，
@@ -92,9 +104,9 @@ class BaseData(metaclass=ABCMeta):
             pool.close() # 不在对进程池中添加进程
         return ret
 
-    @staticmethod
-    def _format_response_data(data):
-        return data
+    def _format_response_data(self, data:list[str]):
+        # 格式化web中得到的字符串
+        pass
 
 if __name__ == '__main__':
     # print(BaseData.gen_stock_list( ) )

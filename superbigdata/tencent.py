@@ -10,6 +10,7 @@ class Tencent(BaseData):
 
     def __init__(self):
         super().__init__()
+        # 如果不写构造函数，默认调用父类init，效果相同
 
     @property
     def stock_api(self) -> str:
@@ -23,4 +24,4 @@ class Tencent(BaseData):
 
 if __name__ == '__main__':
     te = Tencent()
-    print(te.all_market())
+    print(te.stocks(['600519', '000001']))
