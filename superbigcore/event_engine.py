@@ -1,16 +1,27 @@
+"""
+    EventEngine 作为主要的事件驱动引擎的核心，主要负责的功能有：
+
+    维护一个线程安全的 __queue；
+
+    维护一个不断 从 queue 中 取出事件并 使用相应的 处理函数进行处理的 主循环（__run），并放在（put）
+
+    子线程中去循环的；
+
+    维护一个对应不同的事件类型的 处理函数 的 dict（__handlers）； 和一些辅助函数；
+
+    具体的实现上，每个事件的处理函数，的处理过程也被放进了一个子线程（__process）, 这里的话，不需要保证
+
+    这些事件的先后处理顺序吗？
+
+    并且，设计了 注册（register）和 解注册（unregister）的函数进行使用
+
+"""
+
+
 import time
 from collections import defaultdict
 from queue import Queue, Empty
 import threading
-
-
-
-class Event:
-
-    def __init__(self, event_type):
-        pass
-        # self.event_type = event_type
-
 
 
 class EventEngine:
@@ -32,7 +43,7 @@ class EventEngine:
             try:
                 event = self.__queue.get(block=True, timeout=1) # 阻塞和等待时间
                 handle_thread = threading.Thread(target=self.__process,name="EventEngine.__process", args=(event,)) # 名字相同但没关系
-                handle_thread.start()
+                handle_thread.start() # 将具体的处理流程放在子线程中去执行
             except Empty:
                 pass
 
