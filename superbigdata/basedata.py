@@ -3,7 +3,7 @@ import requests
 from abc import ABCMeta, abstractmethod
 import multiprocessing.pool
 
-from helpers import *
+from .helpers import *
 
 class BaseData(metaclass=ABCMeta):
     # 行情获取基类

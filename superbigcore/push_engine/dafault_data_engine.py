@@ -17,7 +17,7 @@
 """
 import time
 import superbigdata
-from base_data_engine import BaseDataEngine
+from .base_data_engine import BaseDataEngine
 
 class DefaultDataEngine(BaseDataEngine):
 

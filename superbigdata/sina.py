@@ -8,7 +8,7 @@ import time
 
 from tushare import stock_issuance
 
-from basedata import BaseData
+from .basedata import BaseData # 相对位置的引入会导致无法运行本地 __main__
 
 class Sina(BaseData):
 

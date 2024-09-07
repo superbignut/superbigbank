@@ -41,7 +41,7 @@ class EventEngine:
         # 从队列中取出事件，并启动相应的线程
         while self.__active:
             try:
-                event = self.__queue.get(block=True, timeout=1) # 阻塞和等待时间
+                event = self.__queue.get(block=True, timeout=1) # 阻塞和等待时间, 由于这里存在阻塞的原因，所以又启动一个线程来做下面的处理
                 handle_thread = threading.Thread(target=self.__process,name="EventEngine.__process", args=(event,)) # 名字相同但没关系
                 handle_thread.start() # 将具体的处理流程放在子线程中去执行
             except Empty:

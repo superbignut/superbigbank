@@ -1,9 +1,8 @@
 import re
 import time
 from functools import partial
-
-from basedata import BaseData
-from helpers import *
+from .basedata import BaseData
+from .helpers import *
 import multiprocessing.pool
 
 class Tencent(BaseData):
