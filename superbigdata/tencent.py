@@ -1,3 +1,7 @@
+"""
+    与sina相同，暂未实现
+"""
+
 import re
 import time
 from functools import partial

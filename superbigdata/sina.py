@@ -1,3 +1,10 @@
+"""
+    sina 的数据子类的实现，处于某种原因，需要实现进一步的_get_headers（）
+
+    此外，stock_api 和 _format_response_data 则是子类的虚函数实现
+"""
+
+
 # headers={'Referer' :'https://finance.sina.com.cn'}
 # url='https://hq.sinajs.cn/list=sh600519'
 # file=requests.get(url=url,headers=headers)

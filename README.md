@@ -2,7 +2,7 @@
 + [qsed](https://github.com/JiaRu2016/qsed)
 + [StockQuant](https://github.com/Gary-Hertel/StockQuant)
 + [easyquotation](https://github.com/shidenggui/easyquotation)
-
++ [timor](https://timor.tech/api/holiday/)
 
 <!--
     事件驱动引擎使用了多个线程来实现功能:

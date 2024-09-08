@@ -1,3 +1,15 @@
+"""
+    主要是 update_stock_codes（）函数作为初始化函数，从 http://www.shdjt.com/js/lib/astock.js
+
+    中获取市场上所有的股票代号，并保存在 STOCK_CODE_PATH 当中
+
+     但并不是每次都会调用，因此在 conf 文件为空时， 需要手动更新；
+
+     其余则为一些辅助函数，比如 从 conf 中加载数据的 get_stock_codes
+
+     获取交易所前缀 get_stock_type、 get_stock_with_type_prefix、 get_stock_list_with_type_prefix 等
+"""
+
 import os
 import re
 import requests

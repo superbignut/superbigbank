@@ -1,3 +1,17 @@
+"""
+    主要的从web中的get数据的函数是 get_stock_by_web_api，并调用了虚函数 stock_api，
+
+     不同的子类需要完成自己的实现方法， 而 _fetch_stock_data 函数负责多线程、多进程来
+
+     调用 get_stock_by_web_api。这里是考虑到每次网络请求可能有数量限制
+
+     而 get_stock_data 则封装了 _fetch_stock_data 和 _format_response_data，当然
+
+     不同的子类也许实现不同的格式化方法；
+
+     其余的 all_market， stocks， _realtime_data， 则都是进一步封装get_stock_data的函数
+"""
+
 import json
 import requests
 from abc import ABCMeta, abstractmethod
