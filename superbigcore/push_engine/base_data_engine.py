@@ -15,6 +15,15 @@ import threading
 import time
 
 from ..event import Event
+from ..event_engine import EventEngine
+
+
+class MarketEvent(Event):
+    def __init__(self, event_type, data):
+        super().__init__(event_type)
+        self.data = data
+# 这里新增了 MarketEvent 事件 用来和 Event 事件进行区分 clock 事件同理
+
 
 class BaseDataEngine:
 
@@ -26,29 +35,29 @@ class BaseDataEngine:
     def __init__(self, event_engine, clock_engine):
         self.event_engine = event_engine # 向 EventEngine 中推入数据
         # self.clock_engine = clock_engine # 暂时未使用
-        self.is_active = False
+        self.__thread_active = False
         self.data_thread = threading.Thread(target=self.push_data, name="BaseDataEngine", daemon=False) # 需要等待
 
 
     def start(self):
         # 启动子线程
-        self.is_active = True
+        self.__thread_active = True
         self.data_thread.start()
 
     def stop(self):
         # 停止
-        self.is_active = False
+        self.__thread_active = False
         self.data_thread.join()
 
     def push_data(self):
         # 通过调用子类的 fetch_data 获得数据， 并封装为 Event事件，插入到__queue中，完成后 wait
-        while self.is_active:
+        while self.__thread_active:
             try:
                 response_data = self.fetch_data()  # 这里应该也会耗时
             except:
                 self.wait()
                 continue
-            event = Event(self.EventType, response_data)
+            event = MarketEvent(event_type=self.EventType, data=response_data)
             self.event_engine.put(event) # 把 事件 put 进 __queue
             self.wait() # 每次 put 后的等待
 

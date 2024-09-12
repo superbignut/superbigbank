@@ -30,7 +30,7 @@ class EventEngine:
 
         self.__queue = Queue() # 事件队列
 
-        self.__active = False # 启动开关
+        self.__thread_active = False # 启动开关
 
         self.__thread = threading.Thread(target=self.__run, name="EventEngine.__thread") # 包含主函数的线程
 
@@ -39,12 +39,13 @@ class EventEngine:
 
     def __run(self):
         # 从队列中取出事件，并启动相应的线程
-        while self.__active:
+        while self.__thread_active:
             try:
                 event = self.__queue.get(block=True, timeout=1) # 阻塞和等待时间, 由于这里存在阻塞的原因，所以又启动一个线程来做下面的处理
-                handle_thread = threading.Thread(target=self.__process,name="EventEngine.__process", args=(event,)) # 名字相同但没关系
+                handle_thread = threading.Thread(target=self.__process, name="EventEngine.__process", args=(event,)) # 名字相同但没关系
                 handle_thread.start() # 将具体的处理流程放在子线程中去执行
             except Empty:
+                print("Event_Engine is Empty now.")
                 pass
 
     def __process(self, event):
@@ -55,12 +56,12 @@ class EventEngine:
 
     def start(self):
         # 启动轮询主线程
-        self.__active = True
+        self.__thread_active = True
         self.__thread.start()
 
     def stop(self):
         # 关闭轮询主线程
-        self.__active = False
+        self.__thread_active = False
         self.__thread.join() # 这里
 
     def register(self, event_type, handler):

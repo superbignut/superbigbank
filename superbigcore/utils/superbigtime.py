@@ -45,7 +45,7 @@ def is_weekend(check_day:datetime.date):
 
 def is_trade_day(check_day:datetime.date):
     # 判断是否是交易日
-    return not (is_holiday(check_day) or is_weekend(day))
+    return not (is_holiday(check_day) or is_weekend(check_day))
 
 
 

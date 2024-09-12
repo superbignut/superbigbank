@@ -14,10 +14,9 @@
 """
 
 class Event:
-    def __init__(self, event_type, data):
+    def __init__(self, event_type):
         # 简单的构造函数，赋值两个成员变量
         self.event_type = event_type
-        self.data = data
 
 
     # self.event_type:

@@ -4,6 +4,7 @@ import threading
 import time
 from collections import defaultdict, deque
 import datetime
+import arrow
 
 class A:
     def __init__(self):
@@ -13,10 +14,10 @@ class A:
 
 if __name__ == '__main__':
     a = datetime.datetime.now().date()
-    b = datetime.timedelta(days=1)
+    b = arrow.get(time.time())
 
-    print(a)
-    print(a + b)
+    print(type(a))
+    print(b)
 
 
 
