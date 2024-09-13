@@ -53,7 +53,7 @@ def get_next_trade_day(check_day:datetime.date, max_check_day=300):
     # 获取从check_day 开始的下一个交易日
     i = 1
     while True:
-        new_day = check_day + datetime.timedelta(1)
+        new_day = check_day + datetime.timedelta(i) # bug_fixed 这里是应该是i，否则死循环
         if is_trade_day(new_day):
             return new_day
         else:
