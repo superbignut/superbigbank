@@ -5,14 +5,13 @@
 
     将获得的数据put 到Event_Engine 中等通用的功能函数，都被写在基类中，
 
-    子类需要实现的只有具体的fetch_data() 函数；
+    子类需要实现的只有具体的fetch_data() 函数 与 重载初始化函数
 
     因此当把 DefaultDataEngine 接入到 superbigdata 的数据爬取时，唯一用到的函数
 
     就是 superbigdata 的 all_market() , 返回所有 stock 的数据；
 
-
-
+    获取具体特定的股票数据可以使用 stocks函数
 
 """
 import time

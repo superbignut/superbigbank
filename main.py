@@ -7,17 +7,22 @@ import datetime
 import arrow
 
 class A:
-    def __init__(self):
-        self.aaa = 1
-        self.bbb =  1 if self.aaa <= 1 else 2
 
+    def __init__(self):
+        self.aaa = 2
+
+class B(A):
+    bbb = 1
+    def __getattr__(self, item):
+        print("yes1")
+
+    def __getattribute__(self, item):
+        print("yes2")
+        return object.__getattribute__(self, item)
 
 if __name__ == '__main__':
-    a = datetime.datetime.now().date()
-    b = arrow.get(time.time())
-
-    print(type(a))
-    print(b)
+    b = B()
+    print(b.bbbc)
 
 
 

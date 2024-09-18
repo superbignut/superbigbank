@@ -69,6 +69,7 @@ class BaseData(metaclass=ABCMeta):
 
     def stocks(self, stock_codes):
         # 返回任意股票代码或列表的对应的实时数据, 前缀不是必须
+        # 举例：['600519', '000001']
         return self._realtime_data(stock_codes)
 
     def _realtime_data(self, stock_codes):

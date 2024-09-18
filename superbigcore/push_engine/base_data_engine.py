@@ -30,14 +30,14 @@ class BaseDataEngine:
     EventType = "base_data_type" # 这里的EventType 是在把数据事件 put 进__queue时使用的 event_type
                                  # 可以在子类中进行重载
 
-    PushInterval = 1 # 每次向__queue 中 put 数据后的等待时间
+    # PushInterval = 1 # 每次向__queue 中 put 数据后的等待时间
 
-    def __init__(self, event_engine, clock_engine):
+    def __init__(self, event_engine, clock_engine, push_interval=1):
         self.event_engine = event_engine # 向 EventEngine 中推入数据
         # self.clock_engine = clock_engine # 暂时未使用
         self.__thread_active = False
         self.data_thread = threading.Thread(target=self.push_data, name="BaseDataEngine", daemon=False) # 需要等待
-
+        self.push_interval = push_interval
 
     def start(self):
         # 启动子线程
@@ -63,7 +63,7 @@ class BaseDataEngine:
 
     def wait(self):
         # 等待PushInterval, 再进行下一次获取数据
-        for _ in range(self.PushInterval):
+        for _ in range(self.push_interval):
             time.sleep(1)
 
     def fetch_data(self):
