@@ -32,8 +32,8 @@ class DefaultLog:
             file_handler = FileHandler(filepath, level=loglevel) #
             self.log.handlers.append(file_handler) # 只给 log 注册 handler
 
-    # def __getattr__(self, item, *args, **kwargs):
-    #     # 如果找不到参数item， 调用__getattr__
-    #     # 访问对象的所有元素都会调用 __getattribute__
-    #     return self.log.__getattribute__(item, *args, **kwargs) # 可变参数
-    #     # 这里不理解
+    def __getattr__(self, item, *args, **kwargs):
+        # 如果找不到参数item， 调用__getattr__
+        # 访问对象的所有元素都会调用 __getattribute__
+        # 比如 lll = DefaultLog() lll.info() lll.warning 都会取调用log的函数
+        return self.log.__getattribute__(item, *args, **kwargs) # 可变参数

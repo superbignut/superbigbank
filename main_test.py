@@ -1,5 +1,7 @@
 import datetime
 import arrow
+
+from superbigcore.main_engine import MainEngine
 from superbigcore.push_engine.base_data_engine import BaseDataEngine
 import superbigdata
 import json
@@ -19,4 +21,6 @@ class TestDataEngine(BaseDataEngine):
 # Todo 完成 log引擎的实现
 
 if __name__ == '__main__':
+
+    robot = MainEngine()
     print("Compile Successfully!")
