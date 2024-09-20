@@ -6,23 +6,31 @@ from collections import defaultdict, deque
 import datetime
 import arrow
 
-class A:
+class A(object):
+    aaa = 1
+    def fun(self):
+        print(self.aaa)
 
+class C(A):
+    aaa = 3
     def __init__(self):
-        self.aaa = 2
+        print(self.aaa)
+
+
 
 class B(A):
     bbb = 1
     def __getattr__(self, item):
         print("yes1")
-
     def __getattribute__(self, item):
         print("yes2")
         return object.__getattribute__(self, item)
 
+
 if __name__ == '__main__':
-    b = B()
-    print(b.bbbc)
+    c = C()
+    c.fun()
+
 
 
 
