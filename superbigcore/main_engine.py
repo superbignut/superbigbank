@@ -1,15 +1,25 @@
 """
-    main_engine包含了对时钟引擎，数据引擎，log，事件引擎的整合
+    main_engine包含了对时钟引擎，数据引擎，log，事件引擎等子引擎的整合
 
+    比如整合所有的start函数， stop函数， 可以统一打开和关闭
+
+    此外需要完成的内容是从策略目录中加载不同的策略对象
+
+    main_engine 中 可以有多个数据引擎和策略对象
 
 """
+import importlib
+import os
+import threading
+import time
 from collections import OrderedDict
 from threading import Thread, Lock
+
+
 from superbigcore.event_engine import EventEngine
 from superbigcore.push_engine.clock_engine import ClockEngine
 from superbigcore.push_engine.dafault_data_engine import DefaultDataEngine
 from superbigcore.utils.superbiglog import DefaultLog
-
 
 class MainEngine:
     def __init__(self, log_engine=DefaultLog(), data_engine=None, broker='xq'):
@@ -28,24 +38,93 @@ class MainEngine:
             data_engines = [data_engines]
         else:
             types = [data_eng.EventType for data_eng in data_engines]
-            if len(types) != len(set(types)): # 有重复
+            if len(types) != len(set(types)): # 检测数据引擎是否有重复
                 raise ValueError("two same data_engines were added.")
         self.data_engines = [] # 数据引擎
 
         for engine in data_engines:
             self.data_engines.append(engine(event_engine=self.event_engine, clock_engine=self.clock_engine))
 
-        self.strategies = OrderedDict() # dict 也具有 ordered 的能力了
-        self.strategy_list = list()
+        self.strategy_list = list() # 把所有的策略对象加载进来
+        self.strategy_class_dict = dict() # 存储名字到 类的字典
+        self.strategy_folder = 'superbigsttg'  # 策略的存放路径
 
-        self.lock = Lock()
+        # self._modules = {} #  文件名 : module  在load 函数中 加载进来
 
-        self._watch_thread =None
+        # self.lock = Lock() 暂不使用
 
-        self.before_shutdown = []
-        self.main_shutdown = []
-        self.after_shutdown = []
+        # self.is_watch_strategy = False # 动态加载策略 # 暂不使用
+        # self._watch_thread = Thread(target=self._load_strategy, name="MainEngine._watch_thread") # 加载策略的进程
+
+        # self._names = None #  加载策略使用，用于记录所有需要用到的策略文件的名字
+
+        # self.before_stop = [] #这连个应该暂时没有用到 也就是在关闭前和关闭后需要执行的操作
+        self.main_stop = [] # 所有的引擎stop 函数
+        # self.after_stop = []
 
         self.log.info("start the main engine")
+
+    def start(self):
+        # 启动 main 引擎，但这个start 应该要等到所有的handler注册之后才行
+
+        self.event_engine.start() # 启动
+        self._add_main_stop(self.event_engine.stop) # 注册事件引擎关闭
+
+        for data_engine in self.data_engines:
+            data_engine.start() # 启动
+            self._add_main_stop(data_engine.stop) # 注册数据引擎关闭
+
+        self.clock_engine.start() # 启动
+        self._add_main_stop(self.clock_engine.stop) # 注册时钟引擎关闭
+
+
+    def _add_main_stop(self, func):
+        # 把所有的子引擎的 stop 函数 注册到self.main_stop中
+        if not hasattr(func, '__call__'):
+            raise ValueError("register a wrong stop func.")
+        self.main_stop.append(func)
+
+
+    def stop(self):
+        # main_engine 的关闭， 需要把其余的有关的子引擎全部关闭
+        self.log.debug("main engine is stopping.")
+        for func in self.main_stop:
+            func()
+        num = threading.active_count()
+        while threading.active_count() != num: # 这是什么意思呢？？
+            time.sleep(2)
+        # 还要关闭策略？？
+
+    def load_strategy(self, names:list):
+        # 从策略目录中加载 names 中指定名字的多个策略，具体加载在load()函数中
+        strategy_files = os.listdir(self.strategy_folder) #
+        strategy_files = filter(lambda x : x.endswith('.py') and x != '__init__.py', strategy_files) # 找到所有策略
+
+        for file in strategy_files: # 遍历剩下的文件
+            self.load(file, names) # 加载所有的策略
+
+    def load(self, strategy_file, names:list):
+        # 加载文件中的策略， 保存策略类和创建的策略对象
+        # strategy_file 是策略目录中 策略文件的名字 .py结尾
+        strategy_module_name = strategy_file[:-3] # 去掉 .py
+        new_module = importlib.import_module('.' + strategy_module_name, package=self.strategy_folder)  # 相对导入
+        strategy_class = getattr(new_module, 'Strategy')
+
+        if strategy_class.name in names: # 查看策略的名字是否 在names中
+            self.strategy_class_dict[strategy_class.name]= strategy_class # 存策略类
+            self.strategy_list.append(strategy_class(main_engine=self)) # 存策略对象
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

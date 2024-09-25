@@ -17,6 +17,7 @@ import logbook
 import logging # 有机会可以使用 logging 进行对logbook 的替换
 from logbook import Logger, StreamHandler, FileHandler
 
+log_dir = 'my_log'
 
 class DefaultLog:
 
@@ -27,8 +28,16 @@ class DefaultLog:
             StreamHandler(sys.stdout, level=loglevel).push_application() # push_application 全部注册
 
         elif log_type == "file":
-            if not os.path.exists(filepath):
-                os.makedirs(filepath) # 递归创建
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir) # 递归创建
+            else:
+                if not os.path.isdir(log_dir):
+                    raise ValueError("{0:s} must be a folder name.".format(log_dir))
+
+            if os.path.dirname(filepath) == '':
+                filepath = log_dir + '/' + filepath
+            elif os.path.dirname(filepath) != log_dir:
+                raise ValueError("filepath must under the {0:s} folder.".format(log_dir))
             file_handler = FileHandler(filepath, level=loglevel) #
             self.log.handlers.append(file_handler) # 只给 log 注册 handler
 

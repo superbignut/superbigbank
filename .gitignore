@@ -2,3 +2,6 @@
 *.pyc
 snowball.json
 todo.md
+/my_log
+clock_test.py
+data_test.py

@@ -1,9 +1,14 @@
 import datetime
-import arrow
+import threading
 
+import arrow
+import sys
+import traceback
 from superbigcore.main_engine import MainEngine
 from superbigcore.push_engine.base_data_engine import BaseDataEngine
+from superbigcore.utils.superbiglog import DefaultLog
 import superbigdata
+import importlib
 import json
 import time
 from dateutil import tz
@@ -18,9 +23,16 @@ class TestDataEngine(BaseDataEngine):
     def fetch_data(self):
         return self.source.stocks(['600519', '000001'])
 
-# Todo 完成 log引擎的实现
 
 if __name__ == '__main__':
 
     robot = MainEngine()
-    print("Compile Successfully!")
+    robot.load_strategy(['strategy_example'])
+
+    print(robot.strategy_list)
+
+
+
+
+
+
