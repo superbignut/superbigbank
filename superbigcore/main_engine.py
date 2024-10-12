@@ -14,7 +14,7 @@ import threading
 import time
 from collections import OrderedDict
 from threading import Thread, Lock
-
+import superbigbull
 
 from superbigcore.event_engine import EventEngine
 from superbigcore.push_engine.clock_engine import ClockEngine
@@ -22,12 +22,9 @@ from superbigcore.push_engine.dafault_data_engine import DefaultDataEngine
 from superbigcore.utils.superbiglog import DefaultLog
 
 class MainEngine:
-    def __init__(self, log_engine=DefaultLog(), data_engine=None, broker='xq'):
+    def __init__(self, log_engine=DefaultLog(), data_engine=None, broker='fake'):
         self.log = log_engine
-        self.broker = broker
-
-        if broker is not None:
-            pass
+        self.broker = superbigbull.use('fake') # 使用fake交易商， 传递给策略对象，用于获取持有信息，并进行交易api调用
 
         self.event_engine = EventEngine() # 事件引擎
         self.clock_engine = ClockEngine(event_engine=self.event_engine) # 时钟引擎
