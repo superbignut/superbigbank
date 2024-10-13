@@ -103,8 +103,10 @@ class ClockEngine:
         register_moment 和 register_interval 为注册函数，负责注册 各种时钟事件
 
     """
-    EventType = 'time_tick'
-    def __init__(self, event_engine:EventEngine, time_zone_info=None,sleep_time=1):
+    EventType = 'time_tick_type' # 与事件引擎的 EventType 一样 ，作用是用来区分clock 和 data 这两种大类的数据
+    # 具体的大类 Event 内部的 不同的事件， 则需要进一步区分了
+
+    def __init__(self, event_engine:EventEngine, time_zone_info=None, sleep_time=1):
         # self.time_zone_info = time_zone_info or tz.tzlocal() # 这里是返回了一个 tzlocal 对象， 暂未使用
         self.event_engine = event_engine
         self.__thread_active = False # 线程启动、关闭标志
@@ -156,7 +158,7 @@ class ClockEngine:
     def tick(self):
         #  封装了 _tick 增加了一个 is_trade_day的判断，其实可以去掉
         if not sutime.is_trade_day(self.now_dt.date()):
-            print("不是交易日，始终引擎不处理时钟事件")
+            print("不是交易日，时钟引擎不处理时钟事件")
             pass
         else:
             self._tick()

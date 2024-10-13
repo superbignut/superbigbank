@@ -66,12 +66,12 @@ class EventEngine:
         self.__thread.join() # 这里
 
     def register(self, event_type, handler):
-        # 注册 事件类型对应的处理函数
+        # 注册 事件类型对应的处理函数; 默认的时钟和数据的注册在 MainEngine 的 strategy_listen_event_register中注册
         if handler not in self.__handlers[event_type]: # []访问失败会创建空list
             self.__handlers[event_type].append(handler)
 
     def unregister(self, event_type, handler):
-        # 注销 事件类型对应的处理函数
+        # 注销 事件类型对应的处理函数; 调用同上
         handler_list = self.__handlers.get(event_type) # get 不会触发 defaultdict
         if handler_list is None:
             return

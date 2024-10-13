@@ -1,4 +1,4 @@
-from trader.fake_trader import FakeTrader
+from .trader.fake_trader import FakeTrader
 
 def use(trader_name):
     if trader_name == 'fake':

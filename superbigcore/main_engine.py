@@ -24,7 +24,7 @@ from superbigcore.utils.superbiglog import DefaultLog
 class MainEngine:
     def __init__(self, log_engine=DefaultLog(), data_engine=None, broker='fake'):
         self.log = log_engine
-        self.broker = superbigbull.use('fake') # 使用fake交易商， 传递给策略对象，用于获取持有信息，并进行交易api调用
+        self.broker = superbigbull.use(broker) # 使用fake交易商， 传递给策略对象，用于获取持有信息，并进行交易api调用
 
         self.event_engine = EventEngine() # 事件引擎
         self.clock_engine = ClockEngine(event_engine=self.event_engine) # 时钟引擎
@@ -105,11 +105,30 @@ class MainEngine:
         # strategy_file 是策略目录中 策略文件的名字 .py结尾
         strategy_module_name = strategy_file[:-3] # 去掉 .py
         new_module = importlib.import_module('.' + strategy_module_name, package=self.strategy_folder)  # 相对导入
-        strategy_class = getattr(new_module, 'Strategy')
+        strategy_class = getattr(new_module, 'Strategy') # 找到模块中的Strategy 类
 
         if strategy_class.name in names: # 查看策略的名字是否 在names中
             self.strategy_class_dict[strategy_class.name]= strategy_class # 存策略类
-            self.strategy_list.append(strategy_class(main_engine=self)) # 存策略对象
+            temp_strategy = strategy_class(main_engine=self) # 创建策略对象， 这里调用策略对象的构造函数
+            self.strategy_list.append(temp_strategy) # 保存策略对象
+
+            self.strategy_listen_event_register(temp_strategy) # 把所有的时钟和数据事件绑定给策略， 具体怎么使用 由策略来决定
+            self.log.info("Load Strategy: ", strategy_class.name) # 打印
+
+    def strategy_listen_event_register(self, strategy, _type='register'):
+        # 把时钟事件和数据事件，全都注册到event_engine 中
+        func = {
+            'register' : self.event_engine.register,
+            'unregister' : self.event_engine.unregister
+        }.get(_type) # 注册还是解注册
+
+        for data_engine in self.data_engines:
+            func(event_type=data_engine.EventType, handler=strategy.run) # 注册或者解注册数据事件
+
+        func(event_type=self.clock_engine.EventType, handler=strategy.run) # 注册或解注册时钟事件
+
+
+
 
 
 
