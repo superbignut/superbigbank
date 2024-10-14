@@ -37,6 +37,7 @@ class BaseDataEngine:
         # self.clock_engine = clock_engine # 暂时未使用
         self.__thread_active = False
         self.data_thread = threading.Thread(target=self.push_data, name="BaseDataEngine", daemon=False) # 需要等待
+        # daemon 默认就都是False
         self.push_interval = push_interval
 
     def start(self):

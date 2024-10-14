@@ -114,9 +114,10 @@ class BaseData(metaclass=ABCMeta):
         try:
             ret = pool.map(self.get_stock_by_web_api, stock_list) # map 会阻塞代码，异步使用map_async
         except:
-            pass
+            ret = None
+            print("_fetch_stock_data error!")
         finally:
-            pool.close() # 不在对进程池中添加进程
+            pool.close() # 不在对进程池中添加进程,
         return ret
 
     def _format_response_data(self, data:list[str]):

@@ -51,8 +51,9 @@ class Strategy(DefaultStrategy):
 
     def strategy(self, event):
         if event.event_type == 'small_data_type':
-            print("处理数据事件： ", event.event_type, " ", event.data)
+            for key, val in event.data.items(): # data 是一个字典
+                print(key, 'current_price is: ', val['now'], "time is: ",val['time'])
         elif event.event_type == 'time_tick_type':
-            print("处理时钟事件： ", event.event_type)
+            print("处理时钟事件： ", event.event_type, event.clock_type)
         else:
             print("Undefined event_type", event.event_type)

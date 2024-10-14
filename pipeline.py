@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     robot = MainEngine(data_engine=SmallDataEngine, broker='fake') # 创建主引擎
     robot.load_strategy(['strategy_example']) # 加载策略列表
-    robot.start() # 主引擎启动
+    robot.run() # 主引擎启动
 
 
 

@@ -10,8 +10,10 @@
 """
 import importlib
 import os
+import sys
 import threading
 import time
+import signal
 from collections import OrderedDict
 from threading import Thread, Lock
 import superbigbull
@@ -20,6 +22,8 @@ from superbigcore.event_engine import EventEngine
 from superbigcore.push_engine.clock_engine import ClockEngine
 from superbigcore.push_engine.dafault_data_engine import DefaultDataEngine
 from superbigcore.utils.superbiglog import DefaultLog
+
+
 
 class MainEngine:
     def __init__(self, log_engine=DefaultLog(), data_engine=None, broker='fake'):
@@ -60,6 +64,16 @@ class MainEngine:
         # self.after_stop = []
 
         self.log.info("start the main engine")
+
+    def signal_handler(self, signal_number, stack_frame):
+        # self.stop() # 结束子线程 # Todo 这个stop函数需要进一步完善
+        sys.exit() # 结束主线程
+
+    def run(self):
+        self.start()
+        signal.signal(signal.SIGINT, handler=self.signal_handler)
+        while True: # 保持主线程不结束
+            pass
 
     def start(self):
         # 启动 main 引擎，但这个start 应该要等到所有的handler注册之后才行
