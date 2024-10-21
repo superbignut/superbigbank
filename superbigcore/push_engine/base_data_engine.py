@@ -49,6 +49,7 @@ class BaseDataEngine:
         # 停止
         self.__thread_active = False
         self.data_thread.join()
+        print("data engine closed.")
 
     def push_data(self):
         # 通过调用子类的 fetch_data 获得数据， 并封装为 Event事件，插入到__queue中，完成后 wait

@@ -147,6 +147,9 @@ class ClockEngine:
     def stop(self):
         # 线程停止
         self.__thread_active = False
+        self.clock_engine_thread.join()
+        print("clock engine closed.")
+
 
     def clock_tick(self):
         # 线程主函数

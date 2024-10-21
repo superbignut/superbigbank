@@ -46,8 +46,8 @@ class MainEngine:
         for engine in data_engines:
             self.data_engines.append(engine(event_engine=self.event_engine, clock_engine=self.clock_engine))
 
-        self.strategy_list = list() # 把所有的策略对象加载进来
-        self.strategy_class_dict = dict() # 存储名字到 类的字典
+        self.strategy_list = list() # 把所有创建的策略对象加载进来
+        # self.strategy_class_dict = dict() # 存储名字到 类的字典
         self.strategy_folder = 'superbigsttg'  # 策略的存放路径
 
         # self._modules = {} #  文件名 : module  在load 函数中 加载进来
@@ -66,12 +66,13 @@ class MainEngine:
         self.log.info("start the main engine")
 
     def signal_handler(self, signal_number, stack_frame):
-        # self.stop() # 结束子线程 # Todo 这个stop函数需要进一步完善
+        self.log.info("SIGINT_SIGNAL come in.")
+        self.stop() # 结束子线程 # Todo 这个stop函数需要进一步完善
         sys.exit() # 结束主线程
 
     def run(self):
-        self.start()
-        signal.signal(signal.SIGINT, handler=self.signal_handler)
+        signal.signal(signal.SIGINT, handler=self.signal_handler) # 注册 ctrl + c 信号处理函数
+        self.start() # 启动所有引擎
         while True: # 保持主线程不结束
             pass
 
@@ -99,12 +100,16 @@ class MainEngine:
     def stop(self):
         # main_engine 的关闭， 需要把其余的有关的子引擎全部关闭
         self.log.debug("main engine is stopping.")
-        for func in self.main_stop:
+        for func in self.main_stop: # 关闭 data_engine event_engine
             func()
-        num = threading.active_count()
-        while threading.active_count() != num: # 这是什么意思呢？？
-            time.sleep(2)
-        # 还要关闭策略？？
+        # num = threading.active_count() # 不理解
+        # print("num is", num)
+        # while threading.active_count() != num:
+        #     print("active is: ", threading.active_count())
+        #     time.sleep(2)
+        for st in self.strategy_list:
+            st.stop() # 调用策略的 stop 处理函数
+        self.log.info("main engine closed.")
 
     def load_strategy(self, names:list):
         # 从策略目录中加载 names 中指定名字的多个策略，具体加载在load()函数中
@@ -122,7 +127,7 @@ class MainEngine:
         strategy_class = getattr(new_module, 'Strategy') # 找到模块中的Strategy 类
 
         if strategy_class.name in names: # 查看策略的名字是否 在names中
-            self.strategy_class_dict[strategy_class.name]= strategy_class # 存策略类
+            # self.strategy_class_dict[strategy_class.name]= strategy_class # 存策略类
             temp_strategy = strategy_class(main_engine=self) # 创建策略对象， 这里调用策略对象的构造函数
             self.strategy_list.append(temp_strategy) # 保存策略对象
 

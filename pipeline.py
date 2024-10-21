@@ -16,11 +16,10 @@ from dateutil import tz
 
 
 if __name__ == '__main__':
-
+    # 使用 Ctrl + C 结束 所有引擎
     robot = MainEngine(data_engine=SmallDataEngine, broker='fake') # 创建主引擎
     robot.load_strategy(['strategy_example']) # 加载策略列表
     robot.run() # 主引擎启动
-
 
 
 

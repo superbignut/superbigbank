@@ -1,25 +1,33 @@
 import multiprocessing
 import os
+import signal
 import threading
 import time
 from collections import defaultdict, deque
 import datetime
 from collections import OrderedDict
+from socket import has_dualstack_ipv6
+
 import arrow
+import dash
+import sys
+
+import signal
 
 
+def signal_handler(signal_number, stack_frame):
+    # self.stop() # 结束子线程 # Todo 这个stop函数需要进一步完善
+    # self.log.info("yes")
+    # print("yes111")
+    sys.exit()  # 结束主线程
 
 if __name__ == '__main__':
-    # a = dict()
-    a = OrderedDict()
-    a["11"] = 101
-    a[1] = 100
-    a[3] = 102
-    a[4] = 202
-    a[3] = 102
-    a[10]= "1"
-    for key, val in a.items():
-        print(key, val)
+    signal.signal(signalnum=signal.SIGINT, handler=signal_handler)
+
+    while True:
+        print(threading.active_count())
+        pass
+
 
 
 

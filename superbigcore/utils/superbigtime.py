@@ -31,7 +31,9 @@ def is_holiday(check_day:datetime.date):
     headers = _get_headers()
     api = 'http://timor.tech/api/holiday/info/'
     res = requests.get(url=api+str(check_day), headers=headers)
+    ######################### 这里有问题， 总会报错 Todo
     holiday = res.json()['type']['type'] # 0 1 2 3 工作日，周末，节假日， 调休（休息日但却要上班）
+    #########################
     return holiday == 2
 
 

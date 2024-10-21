@@ -47,7 +47,7 @@ class Strategy(DefaultStrategy):
                           filepath='strategy_example.log',
                           loglevel='DEBUG')
     def stop(self):
-        pass
+        print("example_strategy closed.")
 
     def strategy(self, event):
         if event.event_type == 'small_data_type':

@@ -3,15 +3,12 @@
 + [StockQuant](https://github.com/Gary-Hertel/StockQuant)
 + [easyquotation](https://github.com/shidenggui/easyquotation)
 + [timor](https://timor.tech/api/holiday/)
-
-<!--
-    事件驱动引擎使用了多个线程来实现功能:
-    
-    + main
-      + EventEngine.__run() # 从 queue 中 get 事件，并处理
-        + EventEngine.__process() # 处理 get 到的事件， 这个线程的实现意义不确定
-
-      + BaseDataEngine.push_data() # 向 queue 插入 data
-
-      + ClockEngine
--->
+---
+##### Main logic：
++ superbigdata: Get stock data from web.
++ superbigsttg: Implementation of strategies.
++ superbigcore: Integrate the event_engine, data_engine and strategy into a unified main_engine.
++ superbigbull: Trade api, (temporary fake_trader only).
+---
+##### Pipeline:
+    python pipeline.py
