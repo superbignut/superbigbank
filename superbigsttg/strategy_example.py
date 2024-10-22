@@ -14,6 +14,7 @@
 from superbigcore.default_strategy import DefaultStrategy
 from superbigcore.utils.superbiglog import DefaultLog
 from superbigcore.push_engine.base_data_engine import BaseDataEngine
+from superbigcore.main_engine import MainEngine
 import superbigdata
 
 
@@ -36,9 +37,10 @@ class SmallDataEngine(BaseDataEngine):
 class Strategy(DefaultStrategy):
     name = 'strategy_example' # 策略的名字， main_engine 中加载时使用
 
-    def __init__(self, main_engine):
+    def __init__(self, main_engine:MainEngine):
         super().__init__(main_engine) # 有关的log_engine, 还有broker 都从main_engine 中进行获取
-
+        self.main_engine = main_engine
+        self.broker = self.main_engine.broker # 交易api
 
     def log_handler(self):
         # 这里如果不重载的话，返回的是main_engine 的log
@@ -46,14 +48,18 @@ class Strategy(DefaultStrategy):
                           log_type='file',
                           filepath='strategy_example.log',
                           loglevel='DEBUG')
+
     def stop(self):
+        # 把可视化进程杀掉
         print("example_strategy closed.")
 
     def strategy(self, event):
         if event.event_type == 'small_data_type':
-            for key, val in event.data.items(): # data 是一个字典
-                print(key, 'current_price is: ', val['now'], "time is: ",val['time'])
+            for name, val in event.data.items(): # data 是一个字典
+                self.broker.buy(name=name,val=val['now'])
+                # print(name, 'current_price is: ', val['now'], "time is: ",val['time'])
         elif event.event_type == 'time_tick_type':
+            self.broker.sell_all() #
             print("处理时钟事件： ", event.event_type, event.clock_type)
         else:
             print("Undefined event_type", event.event_type)

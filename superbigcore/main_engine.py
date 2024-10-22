@@ -89,6 +89,9 @@ class MainEngine:
         self.clock_engine.start() # 启动
         self._add_main_stop(self.clock_engine.stop) # 注册时钟引擎关闭
 
+        self.broker.start() # 经纪人启动
+        self._add_main_stop(self.broker.stop)
+
 
     def _add_main_stop(self, func):
         # 把所有的子引擎的 stop 函数 注册到self.main_stop中
