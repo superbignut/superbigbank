@@ -6,10 +6,9 @@
 """
 import multiprocessing
 import threading
-import subprocess
 import time
 
-from superbigshow.api import show_process, STOP_MSG
+from superbigbull.shower.show import show_process
 
 BULL= {'BUY':0, "SELL":1} # 买卖方向
 
@@ -20,17 +19,16 @@ class OneDeal:
 
 class FakeTrader:
     # 虚假的交易商， 会扣除你非常多的手续费
-    def __init__(self, init_money=0):
+    def __init__(self, init_money=0, log=None):
         # 初始资金
         # 这开一个子进程，包括数据获取 和 启动 streamlit
-            # subprocess(streamlit)
-        # 再开一个线程 提交更新， 不需要锁
-        # threading(target=update)
-        self.parent_conn, child_conn = multiprocessing.Pipe() # 创建管道， 返回两个端口
-        self.show_process = multiprocessing.Process(target=show_process, name="Fake_Trader_show_p", args=(child_conn,)) # child_conn 传递给子进程
 
-        self.update_thread_flag = False
-        self.update_thread = threading.Thread(target=self.update, name="Fake_Trader_update_t")
+        self.parent_conn, child_conn = multiprocessing.Pipe() # 创建管道， 返回两个端口
+        self.show_process = multiprocessing.Process(target=show_process, name="Fake_Trader_show_process", args=(child_conn,)) # child_conn 传递给子进程
+
+        self.update_thread_flag = False # 数据提交线程控制位
+        self.update_thread = threading.Thread(target=self.update, name="Fake_Trader_update_thread")
+        self.log = log
 
 
     def start(self):
@@ -40,19 +38,27 @@ class FakeTrader:
 
 
     def stop(self):
-        self.show_process_send_stop() # 通知可视化进程结束
-        time.sleep(1)
-        self.show_process.join()# 等待结束
-        print("show_process stopped.")
+        #
+        self.update_thread_flag = False  # 更新数据线程结束, 这个线程 怎么关不掉呢？
+        self.update_thread.join()
+        self.log.info("update_thread stopped.")
 
-        self.update_thread_flag = False # 更新数据线程结束
-        print("update_thread stopped.")
+        self.show_process.join() # 可视化进程等待结束
+        self.log.info("show_process stopped.")
+
+
 
     def show_process_send_msg(self, msg):
-        self.parent_conn.send(msg)
+        # 进程间通信，向可视化进程发送消息
+        try:
+            self.parent_conn.send(msg)
+        except (BrokenPipeError, OSError): # 如果子进程先被关闭了，可能会多次报错
+            self.log.info("BrokenPipeError triggered at show_process_send_msg().") # Todo 为什么会被多次触发
+            # self.parent_conn.close()
 
-    def show_process_send_stop(self):
-        self.parent_conn.send(STOP_MSG)
+
+    # def show_process_send_stop(self):
+    #     self.show_process_send_msg(STOP_MSG)
 
     def update(self):
         while self.update_thread_flag:
@@ -88,4 +94,5 @@ class FakeTrader:
         # 返回当日的所有交易
         pass
 
-
+    # def set_log(self, log):
+    #     self.log = log

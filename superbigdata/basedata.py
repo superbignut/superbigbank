@@ -14,6 +14,7 @@
 
 import json
 import requests
+import datetime
 from abc import ABCMeta, abstractmethod
 import multiprocessing.pool
 
@@ -104,9 +105,9 @@ class BaseData(metaclass=ABCMeta):
         temp_data = self._fetch_stock_data(stock_list_with_prefix)
         return self._format_response_data(temp_data)
 
-    def _fetch_stock_data(self, stock_list:list[str], method='mutil-process')->list[str]:
+    def _fetch_stock_data(self, stock_list:list[str], method='mutil-thread')->list[str]:
         # 从web 中获取股票信息
-        if method == 'mutil-process':
+        if method == 'mutil-process': # 使用多进程会在 ctrl+c的时候出问题， 因此还是多线程稳妥一些
             pool = multiprocessing.Pool(min(len(stock_list), os.cpu_count()))  # 使用多进程会造成 self 对象被赋值到每一个进程中，
             # 具体可以体现在下面调用 get_stock_by_web_api 时 每个进程的 self均为不同的对象， 而多线程则是用一个对象
         else:
@@ -115,7 +116,7 @@ class BaseData(metaclass=ABCMeta):
             ret = pool.map(self.get_stock_by_web_api, stock_list) # map 会阻塞代码，异步使用map_async
         except:
             ret = None
-            print("_fetch_stock_data error!")
+            print(datetime.datetime.now() ,"_fetch_stock_data error!")
         finally:
             pool.close() # 不在对进程池中添加进程,
         return ret

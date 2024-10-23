@@ -25,8 +25,8 @@ class SmallDataEngine(BaseDataEngine):
     # 如果只是使用具体的几个股票数据，可以自定义数据引擎 ， 重载init和fetch函数
     EventType = "small_data_type"
 
-    def __init__(self, event_engine, clock_engine):
-        super().__init__(event_engine, clock_engine, push_interval=1)
+    def __init__(self, event_engine, clock_engine, log):
+        super().__init__(event_engine, clock_engine, log, push_interval=1)
         self.source = superbigdata.use('sina')
 
     def fetch_data(self):
@@ -56,10 +56,11 @@ class Strategy(DefaultStrategy):
     def strategy(self, event):
         if event.event_type == 'small_data_type':
             for name, val in event.data.items(): # data 是一个字典
+                print(name, 'current_price is: ', val['now'], "time is: ", val['time'])
                 self.broker.buy(name=name,val=val['now'])
-                # print(name, 'current_price is: ', val['now'], "time is: ",val['time'])
+
         elif event.event_type == 'time_tick_type':
-            self.broker.sell_all() #
             print("处理时钟事件： ", event.event_type, event.clock_type)
+            self.broker.sell_all()  #
         else:
             print("Undefined event_type", event.event_type)

@@ -22,8 +22,8 @@ class DefaultDataEngine(BaseDataEngine):
 
     EventType = 'default_data_type' # 子类重载父类的事件类型
 
-    def __init__(self, event_engine, clock_engine):
-        super().__init__(event_engine, clock_engine) # 显示调用
+    def __init__(self, event_engine, clock_engine, log):
+        super().__init__(event_engine, clock_engine, log) # 显示调用
         self.source = superbigdata.use('sina') # superbigdata 的接口
 
 

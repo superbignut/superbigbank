@@ -16,6 +16,7 @@ import time
 import signal
 from collections import OrderedDict
 from threading import Thread, Lock
+
 import superbigbull
 
 from superbigcore.event_engine import EventEngine
@@ -28,7 +29,7 @@ from superbigcore.utils.superbiglog import DefaultLog
 class MainEngine:
     def __init__(self, log_engine=DefaultLog(), data_engine=None, broker='fake'):
         self.log = log_engine
-        self.broker = superbigbull.use(broker) # 使用fake交易商， 传递给策略对象，用于获取持有信息，并进行交易api调用
+        self.broker = superbigbull.use(broker, log=self.log) # 使用fake交易商， 传递给策略对象，用于获取持有信息，并进行交易api调用
 
         self.event_engine = EventEngine() # 事件引擎
         self.clock_engine = ClockEngine(event_engine=self.event_engine) # 时钟引擎
@@ -44,7 +45,7 @@ class MainEngine:
         self.data_engines = [] # 数据引擎
 
         for engine in data_engines:
-            self.data_engines.append(engine(event_engine=self.event_engine, clock_engine=self.clock_engine))
+            self.data_engines.append(engine(event_engine=self.event_engine, clock_engine=self.clock_engine, log=self.log))
 
         self.strategy_list = list() # 把所有创建的策略对象加载进来
         # self.strategy_class_dict = dict() # 存储名字到 类的字典
@@ -61,20 +62,35 @@ class MainEngine:
 
         # self.before_stop = [] #这连个应该暂时没有用到 也就是在关闭前和关闭后需要执行的操作
         self.main_stop = [] # 所有的引擎stop 函数
+        self.stop_flag = False # 被ctrl + c 中断信号修改， start 中检测到修改为True后，启动全部 stop
+        # self.stop_check_thread = threading.Thread(target=self.stop_check_func, name="stop_check_thread")
         # self.after_stop = []
-
+        signal.signal(signal.SIGINT, handler=self.signal_handler)  # 注册 ctrl + c 信号处理函数， 还需要防止多次触发
         self.log.info("start the main engine")
 
     def signal_handler(self, signal_number, stack_frame):
-        self.log.info("SIGINT_SIGNAL come in.")
-        self.stop() # 结束子线程 # Todo 这个stop函数需要进一步完善
-        sys.exit() # 结束主线程
+
+        self.stop_flag = True # 又包了一层，防止多次中断
+        """
+            https://docs.python.org/3/library/signal.html
+            
+            For many programs, especially those that merely want to exit on KeyboardInterrupt, this is not a problem, 
+            but applications that are complex or require high reliability should avoid raising exceptions from signal 
+            handlers. They should also avoid catching KeyboardInterrupt as a means of gracefully shutting down. 
+            Instead, they should install their own SIGINT handler.
+        """
 
     def run(self):
-        signal.signal(signal.SIGINT, handler=self.signal_handler) # 注册 ctrl + c 信号处理函数
         self.start() # 启动所有引擎
-        while True: # 保持主线程不结束
-            pass
+        self.stop_check_func() # 主线程开始监听stop_flag
+
+    def stop_check_func(self):
+        while True:
+            if self.stop_flag:
+                self.log.info("sigint_signal is captured by main_engine.")
+                self.stop()  # 结束子线程
+                break
+            # time.sleep(1) # 加了就报错, 不太清楚为什么？
 
     def start(self):
         # 启动 main 引擎，但这个start 应该要等到所有的handler注册之后才行
@@ -91,6 +107,8 @@ class MainEngine:
 
         self.broker.start() # 经纪人启动
         self._add_main_stop(self.broker.stop)
+
+        # self.stop_check_thread.start() # 关闭检查启动
 
 
     def _add_main_stop(self, func):

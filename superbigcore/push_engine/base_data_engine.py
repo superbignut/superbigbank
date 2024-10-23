@@ -32,9 +32,10 @@ class BaseDataEngine:
 
     # PushInterval = 1 # 每次向__queue 中 put 数据后的等待时间
 
-    def __init__(self, event_engine, clock_engine, push_interval=1):
+    def __init__(self, event_engine, clock_engine, log, push_interval=1):
         self.event_engine = event_engine # 向 EventEngine 中推入数据
         # self.clock_engine = clock_engine # 暂时未使用
+        self.log = log
         self.__thread_active = False
         self.data_thread = threading.Thread(target=self.push_data, name="BaseDataEngine", daemon=False) # 需要等待
         # daemon 默认就都是False
@@ -49,7 +50,7 @@ class BaseDataEngine:
         # 停止
         self.__thread_active = False
         self.data_thread.join()
-        print("data engine closed.")
+        self.log.info("data engine closed.")
 
     def push_data(self):
         # 通过调用子类的 fetch_data 获得数据， 并封装为 Event事件，插入到__queue中，完成后 wait

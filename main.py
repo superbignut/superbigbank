@@ -1,13 +1,16 @@
-import multiprocessing
-import os
-import threading
-import subprocess
-import time
-import signal
+import signal,sys
 
-from superbigshow.api import show_process
-from data_test import show
-from superbigshow.app import showw
+def handleInt(sign,no):
+    print("interrupted")
+    # sys.exit()
 
-if __name__ == '__main__':
-    print(os.path.join(os.path.dirname(__file__),"app.py"))
+signal.signal(signal.SIGINT, handleInt)    # exception raised is IOError
+
+a = sys.stdin.read(1)
+try:
+   pass
+except IOError:
+    print("io interrupt")
+else:
+    # else is executed only if no exception was raised
+    print("done")

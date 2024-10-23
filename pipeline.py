@@ -26,7 +26,7 @@ if __name__ == '__main__':
     robot = MainEngine(data_engine=SmallDataEngine, broker='fake') # 创建主引擎
     robot.load_strategy(['strategy_example']) # 加载策略列表
     robot.run() # 主引擎启动
-    # 可视化启动 应该就是放到 brocker 里面
+    # 可视化启动 应该就是放到 broker 里面
 
 
 
