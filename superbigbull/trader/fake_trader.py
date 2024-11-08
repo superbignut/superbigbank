@@ -8,7 +8,7 @@ import multiprocessing
 import threading
 import time
 
-from superbigbull.shower.show import show_process
+from superbigbull.shower.basic_data_show import show_process
 
 BULL= {'BUY':0, "SELL":1} # 买卖方向
 
@@ -31,10 +31,19 @@ class FakeTrader:
             
         """
         self.show_process = multiprocessing.Process(target=show_process, name="Fake_Trader_show_process", args=(self.child_conn,)) # child_conn 传递给子进程
-
         self.update_thread_flag = False # 数据提交线程控制位
         self.update_thread = threading.Thread(target=self.update, name="Fake_Trader_update_thread")
         self.log = log
+
+        self.stock_list = [] # 600519 # 持有列表
+        self.stock_dict = dict() # 600519 : 持有数量
+        self.initial_fund = 0 # 投入资金
+        self.existing_fund = 0 #  现有资金
+        self.total_assets = 0 # 全部资产总和 = 现有资金 + 股票
+
+
+
+
 
 
     def _show_process_start_and_close_child_conn(self):
@@ -77,8 +86,15 @@ class FakeTrader:
     def update(self):
         while self.update_thread_flag:
             # 启动一个线程，不断提交 交易数据到可视化进程， 可视化进程 负责web数据和 交易信息可视化
+            """
+                发送数据格式: stock_list, stock_dict, initial_fund, existing_fund, total_assets
+            """
+            self.show_process_send_msg(self.stock_list,
+                                       self.stock_dict,
+                                       self.initial_fund,
+                                       self.existing_fund,
+                                       self.total_assets)
             time.sleep(1)
-            self.show_process_send_msg([1,2,3,4])
 
     def buy(self, name, num=None):
         # 买 num 个 name
