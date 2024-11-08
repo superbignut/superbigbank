@@ -23,16 +23,29 @@ class FakeTrader:
         # 初始资金
         # 这开一个子进程，包括数据获取 和 启动 streamlit
 
-        self.parent_conn, child_conn = multiprocessing.Pipe() # 创建管道， 返回两个端口
-        self.show_process = multiprocessing.Process(target=show_process, name="Fake_Trader_show_process", args=(child_conn,)) # child_conn 传递给子进程
+        self.child_conn, self.parent_conn = multiprocessing.Pipe(duplex=False) # 创建管道， 返回两个端口, child_conn 只用于接收， parent只用于发送
+        """
+            在我的windows11上，将child_conn, self.parent_conn 当作参数传递给子进程的时候， 如果在同时打印
+            
+            这4个变量的id， 会发现他们是不同的， 这又就导致了，只有所有的发送端都关闭了管道的端口，才会触发接收端的EOF_Error
+            
+        """
+        self.show_process = multiprocessing.Process(target=show_process, name="Fake_Trader_show_process", args=(self.child_conn,)) # child_conn 传递给子进程
 
         self.update_thread_flag = False # 数据提交线程控制位
         self.update_thread = threading.Thread(target=self.update, name="Fake_Trader_update_thread")
         self.log = log
 
 
-    def start(self):
+    def _show_process_start_and_close_child_conn(self):
+        # 这个函数用来封装子进程的启动，并关闭父进程中的child管道， 因为子进程中已经做了“管道拷贝”
         self.show_process.start()
+        self.child_conn.close() # 不需要所以关闭
+        pass
+
+    def start(self):
+        self._show_process_start_and_close_child_conn()
+
         self.update_thread_flag = True
         self.update_thread.start()
 
@@ -42,6 +55,7 @@ class FakeTrader:
         self.update_thread_flag = False  # 更新数据线程结束, 这个线程 怎么关不掉呢？
         self.update_thread.join()
         self.log.info("update_thread stopped.")
+        self.parent_conn.close() # 关闭父亲通道， 进而子进程EOF
 
         self.show_process.join() # 可视化进程等待结束
         self.log.info("show_process stopped.")
@@ -52,8 +66,8 @@ class FakeTrader:
         # 进程间通信，向可视化进程发送消息
         try:
             self.parent_conn.send(msg)
-        except (BrokenPipeError, OSError): # 如果子进程先被关闭了，可能会多次报错
-            self.log.info("BrokenPipeError triggered at show_process_send_msg().") # Todo 为什么会被多次触发
+        except (BrokenPipeError, OSError) as e: # 如果子进程先被关闭了，可能会多次报错
+            self.log.info("BrokenPipeError triggered at show_process_send_msg().", e) # Todo 为什么会被多次触发
             # self.parent_conn.close()
 
 

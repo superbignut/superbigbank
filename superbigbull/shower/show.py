@@ -18,7 +18,7 @@ def signal_handler(signal_number, stack_frame):
     # time.sleep(2)  # 子进程慢点关闭
     print("sigint_signal is captured by show_process.") # 这里需要等待接受完毕之后 在关闭，否则管道报错
 
-    raise ValueError # 这里可以自定义错误类型
+    # raise ValueError # 这里可以自定义错误类型
 
 
 
@@ -28,7 +28,7 @@ class DefaultShower:
 
 
 def show_process(conn):
-    signal.signal(signal.SIGINT, handler=signal_handler)  # 注册 ctrl + c 信号处理函数
+    signal.signal(signal.SIGINT, handler=signal_handler)  # 注册 ctrl + c 信号处理函数， 但没什么用
     # 可视化进程， 包括数据的可视化和交易信息的可视化
     print("show_process pid is: ", os.getpid())
 
@@ -38,9 +38,12 @@ def show_process(conn):
     while True:
 
         try:
-            temp_data = conn.recv()  # 接收管道的数据 # 这里的数据格式需要定义一下
+            temp_data = conn.recv()  # 报错 中断函数调用， 改成poll 会好吗
             print(temp_data)
-        except ValueError: # ctrl+c 关闭进程时会触发,
-            conn.close() # 关闭 conn
+        except (InterruptedError, EOFError) as e: # ctrl+c 关闭进程时会触发
+            print("show_process is closed by except InterruptedError or EOF_ERROR:", e)
             stream_lit_p.terminate() # 关闭子进程 streamlit
+            print("stream_lit_p is closed by show_process normally.")
             sys.exit() # 安全退出
+
+
