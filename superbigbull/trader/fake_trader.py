@@ -15,7 +15,10 @@ import subprocess
 from filelock import FileLock
 from collections import defaultdict
 
-json_data_lock = FileLock("data.json.lock", timeout=2) # 把数据写到json中 之前需要先拿到锁
+LOCK_FILE_ADDR = os.path.join(os.path.dirname(__file__), "data.json.lock")
+IPC_FILE_ADDR = os.path.join(os.path.dirname(__file__), "data.json")
+
+json_data_lock = FileLock(LOCK_FILE_ADDR, timeout=2) # 把数据写到json中 之前需要先拿到锁
 """
     但是由于我是在windows上写的代码，测试两个进程同时分别读写进程，也没有问题出现，在os似乎已经被加了锁
 """
@@ -45,9 +48,7 @@ class FakeTrader:
         # self.update_thread = threading.Thread(target=self.trade_data_update, name="Fake_Trader_update_thread")
         self.log = log
         self.st_show_process = None # 可视化进程 用于安全关闭
-
         self.stock_dict = defaultdict(int) # 600519 : 持有数量
-
         self.fund_data_dict = {
             "initial_fund": 0.0,  # 投入资金
             "existing_fund": 0.0, # 现有资金
@@ -83,7 +84,7 @@ class FakeTrader:
             "fund_data_dict": self.fund_data_dict
         }
         with json_data_lock:
-            with open("data.json", 'w') as f:
+            with open(IPC_FILE_ADDR, 'w') as f:
                 json.dump(fp=f, obj=all_data_dict)
 
     @staticmethod

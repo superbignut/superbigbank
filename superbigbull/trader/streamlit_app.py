@@ -9,13 +9,14 @@ import time
 import json
 from filelock import FileLock
 import streamlit as st
+from fake_trader import IPC_FILE_ADDR, LOCK_FILE_ADDR
 
-json_data_lock = FileLock("data.json.lock", timeout=2) # 把数据写到json中 之前需要先拿到锁
+json_data_lock = FileLock(LOCK_FILE_ADDR, timeout=2) # 把数据写到json中 之前需要先拿到锁
 
 # 定义一个函数读取 JSON 文件
 def _load_json_data():
     with json_data_lock:
-        with open("data.json", "r") as f:
+        with open(IPC_FILE_ADDR, "r") as f:
             return json.load(f)
 
 
