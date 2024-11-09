@@ -1,14 +1,23 @@
 """
     这是一个假的 交易对象， 提供基本的买卖函数， 先越简单越好，
 
-    然后的话， 应该是把数据引擎再次获取， 并且和交易信息全都可视化到网页端
+    然后的话， 应该是把数据引擎再次获取， 并且和交易信息全都可视化到网页端，
+
+    与可视化进程之间的通信方式，暂时使用的是读写data.json文件
 
 """
 import multiprocessing
 import threading
 import time
+import json
+import os
+import subprocess
+from filelock import FileLock
 
-from superbigbull.shower.basic_data_show import show_process
+json_data_lock = FileLock("data.json.lock", timeout=2) # 把数据写到json中 之前需要先拿到锁
+"""
+    但是由于我是在windows上写的代码，测试两个进程同时分别读写进程，也没有问题出现，在os似乎已经被加了锁
+"""
 
 BULL= {'BUY':0, "SELL":1} # 买卖方向
 
@@ -20,84 +29,59 @@ class OneDeal:
 class FakeTrader:
     # 虚假的交易商， 会扣除你非常多的手续费
     def __init__(self, init_money=0, log=None):
-        # 初始资金
-        # 这开一个子进程，包括数据获取 和 启动 streamlit
 
-        self.child_conn, self.parent_conn = multiprocessing.Pipe(duplex=False) # 创建管道， 返回两个端口, child_conn 只用于接收， parent只用于发送
-        """
-            在我的windows11上，将child_conn, self.parent_conn 当作参数传递给子进程的时候， 如果在同时打印
-            
-            这4个变量的id， 会发现他们是不同的， 这又就导致了，只有所有的发送端都关闭了管道的端口，才会触发接收端的EOF_Error
-            
-        """
-        self.show_process = multiprocessing.Process(target=show_process, name="Fake_Trader_show_process", args=(self.child_conn,)) # child_conn 传递给子进程
         self.update_thread_flag = False # 数据提交线程控制位
-        self.update_thread = threading.Thread(target=self.update, name="Fake_Trader_update_thread")
+        self.update_thread = threading.Thread(target=self.trade_data_update, name="Fake_Trader_update_thread")
         self.log = log
+        self.st_show_process = None # 可视化进程 用于安全关闭
 
-        self.stock_list = [] # 600519 # 持有列表
         self.stock_dict = dict() # 600519 : 持有数量
-        self.initial_fund = 0 # 投入资金
-        self.existing_fund = 0 #  现有资金
-        self.total_assets = 0 # 全部资产总和 = 现有资金 + 股票
-
-
-
-
-
-
-    def _show_process_start_and_close_child_conn(self):
-        # 这个函数用来封装子进程的启动，并关闭父进程中的child管道， 因为子进程中已经做了“管道拷贝”
-        self.show_process.start()
-        self.child_conn.close() # 不需要所以关闭
-        pass
+        self.fund_data_dict = {
+            "initial_fund": 0,  # 投入资金
+            "existing_fund": 0, #  现有资金
+            "total_assets": 0, # 全部资产总和 = 现有资金 + 股票
+            "current_time":0 # 当下的时间
+        }
 
     def start(self):
-        self._show_process_start_and_close_child_conn()
-
         self.update_thread_flag = True
         self.update_thread.start()
+        time.sleep(0.5) # 等待一会启动 可视化
+        self.st_show_process = self._streamlit_process_start() # 启动可视化进程
 
+    def _streamlit_process_start(self):
+        script_path = os.path.join(os.path.dirname(__file__), "streamlit_app.py")  # streamlit 启动文件
+        stream_lit_p = subprocess.Popen(["streamlit", "run", script_path])  # 启动 streamlit 可视化, 也需要定义数据格式
+        self.log.info("streamlit_process start, pid is: ", stream_lit_p.pid)
+        return stream_lit_p
 
     def stop(self):
-        #
-        self.update_thread_flag = False  # 更新数据线程结束, 这个线程 怎么关不掉呢？
+        # 关闭线程， 关闭可视化进程
+        self.update_thread_flag = False  # 更新数据线程结束
         self.update_thread.join()
         self.log.info("update_thread stopped.")
-        self.parent_conn.close() # 关闭父亲通道， 进而子进程EOF
+        self.st_show_process.terminate() # 可视化进程等待结束
+        self.log.info("st_show_process stopped.")
 
-        self.show_process.join() # 可视化进程等待结束
-        self.log.info("show_process stopped.")
-
-
-
-    def show_process_send_msg(self, msg):
-        # 进程间通信，向可视化进程发送消息
-        try:
-            self.parent_conn.send(msg)
-        except (BrokenPipeError, OSError) as e: # 如果子进程先被关闭了，可能会多次报错
-            self.log.info("BrokenPipeError triggered at show_process_send_msg().", e) # Todo 为什么会被多次触发
-            # self.parent_conn.close()
-
-
-    # def show_process_send_stop(self):
-    #     self.show_process_send_msg(STOP_MSG)
-
-    def update(self):
+    def trade_data_update(self):
+        # 目前是使用最简答的文件读写的方式把数据传给 streamlit
         while self.update_thread_flag:
             # 启动一个线程，不断提交 交易数据到可视化进程， 可视化进程 负责web数据和 交易信息可视化
-            """
-                发送数据格式: stock_list, stock_dict, initial_fund, existing_fund, total_assets
-            """
-            self.show_process_send_msg(self.stock_list,
-                                       self.stock_dict,
-                                       self.initial_fund,
-                                       self.existing_fund,
-                                       self.total_assets)
+
+            self.fund_data_dict["current_time"] = int(time.time()) # 测试时间
+            all_data_dict = {
+                "stock_dict": self.stock_dict,
+                "fund_data_dict": self.fund_data_dict
+            }
+            with json_data_lock:
+                with open("data.json", 'w') as f:
+                    json.dump(fp=f, obj=all_data_dict)
+
             time.sleep(1)
 
     def buy(self, name, num=None):
         # 买 num 个 name
+        # 这里不会还要加锁吧， 最开始是串行处理吧， 可能真实一点的情况是，维护一个队列
         pass
 
     def sell(self, name, num=None):
@@ -123,6 +107,3 @@ class FakeTrader:
     def get_today_deal(self):
         # 返回当日的所有交易
         pass
-
-    # def set_log(self, log):
-    #     self.log = log
