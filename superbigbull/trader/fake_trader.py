@@ -65,7 +65,7 @@ class FakeTrader:
     def _streamlit_process_start(self):
         script_path = os.path.join(os.path.dirname(__file__), "streamlit_app.py")  # streamlit 启动文件
         stream_lit_p = subprocess.Popen(["streamlit", "run", script_path])  # 启动 streamlit 可视化, 也需要定义数据格式
-        self.log.info("streamlit_process start, pid is: ", stream_lit_p.pid) # 这个pid 打印不出来？
+        self.log.info("streamlit_process start, pid is: " +  str(stream_lit_p.pid)) #
         return stream_lit_p
 
     def stop(self):

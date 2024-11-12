@@ -12,6 +12,7 @@ import sys
 import traceback
 from superbigcore.main_engine import MainEngine
 from superbigsttg.strategy_example import SmallDataEngine
+from superbigsttg.double_ma import SmallDataEngine as DMA_DataEngine
 from superbigcore.push_engine.base_data_engine import BaseDataEngine
 from superbigcore.utils.superbiglog import DefaultLog
 import superbigdata
@@ -23,8 +24,12 @@ from dateutil import tz
 
 if __name__ == '__main__':
     # 使用 Ctrl + C 结束 所有引擎
-    robot = MainEngine(data_engine=SmallDataEngine, broker='fake') # 创建主引擎
-    robot.load_strategy(['strategy_example']) # 加载策略列表
+    # robot = MainEngine(data_engine=SmallDataEngine, broker='fake') # 创建主引擎
+    # robot.load_strategy(['strategy_example']) # 策略实例 0
+
+    robot = MainEngine(data_engine=DMA_DataEngine, broker='fake')  # 创建主引擎
+    robot.load_strategy(['double_ma'])  # 策略实例 1
+
     robot.run() # 主引擎启动
     # 可视化启动 应该就是放到 broker 里面
 

@@ -153,7 +153,7 @@ class MainEngine:
             self.strategy_list.append(temp_strategy) # 保存策略对象
 
             self.strategy_listen_event_register(temp_strategy) # 把所有的时钟和数据事件绑定给策略， 具体怎么使用 由策略来决定
-            self.log.info("Load Strategy: ", strategy_class.name) # 打印
+            self.log.info("Load Strategy: " + strategy_class.name) # 打印
 
     def strategy_listen_event_register(self, strategy, _type='register'):
         # 把时钟事件和数据事件，全都注册到event_engine 中
