@@ -3,6 +3,7 @@
 + [StockQuant](https://github.com/Gary-Hertel/StockQuant)
 + [easyquotation](https://github.com/shidenggui/easyquotation)
 + [timor](https://timor.tech/api/holiday/)
++ [THSTrader](https://github.com/nladuo/THSTrader)
 ---
 ##### Main logic：
 + superbigdata: Get stock data from web.
