@@ -6,3 +6,4 @@ todo.md
 clock_test.py
 data_test.py
 *.xml
+/**/*.png

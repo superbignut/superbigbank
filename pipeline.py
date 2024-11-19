@@ -27,8 +27,8 @@ if __name__ == '__main__':
     # robot = MainEngine(data_engine=SmallDataEngine, broker='fake') # 创建主引擎
     # robot.load_strategy(['strategy_example']) # 策略实例 0
 
-    robot = MainEngine(data_engine=DMA_DataEngine, broker='fake')  # 创建主引擎
-    robot.load_strategy(['double_ma'])  # 策略实例 1
+    robot = MainEngine(data_engine=SmallDataEngine, broker='fake')  # 创建主引擎
+    robot.load_strategy(['strategy_example'])  # 策略实例 1
 
     robot.run() # 主引擎启动
     # 可视化启动 应该就是放到 broker 里面
