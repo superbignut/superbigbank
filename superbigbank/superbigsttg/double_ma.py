@@ -3,7 +3,6 @@
 
     进而达到盈利
 """
-from numexpr.expressions import max_int32
 
 """
     继承自 DefaultStrategy 的策略示例， 需要重载 init strategy log(可选) stop(选) 四个函数
@@ -20,11 +19,10 @@ from numexpr.expressions import max_int32
 """
 
 
-from superbigcore.default_strategy import DefaultStrategy
-from superbigcore.utils.superbiglog import DefaultLog
-from superbigcore.push_engine.base_data_engine import BaseDataEngine
-from superbigcore.main_engine import MainEngine
-import superbigdata
+from superbigbank.superbigcore.default_strategy import DefaultStrategy
+from superbigbank.superbigcore.push_engine.base_data_engine import BaseDataEngine
+from superbigbank.superbigcore.main_engine import MainEngine
+from superbigbank import superbigdata
 from collections import deque
 
 """

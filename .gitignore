@@ -1,9 +1,9 @@
 /.idea
 *.pyc
 snowball.json
-todo.md
-/my_log
-clock_test.py
-data_test.py
-*.xml
+superbigbank/todo.md
+superbigbank/my_log
+superbigbank/clock_test.py
+superbigbank/data_test.py
+/**/*.xml
 /**/*.png

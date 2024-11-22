@@ -1,15 +1,14 @@
-#### Reference:
+### Reference:
 + [qsed](https://github.com/JiaRu2016/qsed)
 + [StockQuant](https://github.com/Gary-Hertel/StockQuant)
 + [easyquotation](https://github.com/shidenggui/easyquotation)
 + [timor](https://timor.tech/api/holiday/)
 + [THSTrader](https://github.com/nladuo/THSTrader)
++ [Quantaxis](https://github.com/yutiansut/QUANTAXIS)
 ---
-##### Main logic：
-+ superbigdata: Get stock data from web.
-+ superbigsttg: Implementation of strategies.
-+ superbigcore: Integrate the event_engine, data_engine and strategy into a unified main_engine.
-+ superbigbull: Trade api, (temporary fake_trader only).
+### Overview:
++ #### bigexample is a simplest event driven code.
++ #### superbigbank is a slightly simpler event driven code.
++ #### A more complex quant platform is going to be built.
+
 ---
-##### Pipeline:
-    python pipeline.py

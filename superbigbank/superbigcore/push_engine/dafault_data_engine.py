@@ -14,8 +14,7 @@
     获取具体特定的股票数据可以使用 stocks函数
 
 """
-import time
-import superbigdata
+from ... import superbigdata
 from .base_data_engine import BaseDataEngine
 
 class DefaultDataEngine(BaseDataEngine):

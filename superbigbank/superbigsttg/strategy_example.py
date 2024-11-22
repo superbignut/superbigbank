@@ -11,12 +11,11 @@
 """
 
 
-from superbigcore.default_strategy import DefaultStrategy
-from superbigcore.utils.superbiglog import DefaultLog
-from superbigcore.push_engine.base_data_engine import BaseDataEngine
-from superbigcore.main_engine import MainEngine
-import superbigdata
-
+from superbigbank.superbigcore.default_strategy import DefaultStrategy
+from superbigbank.superbigcore.utils.superbiglog import DefaultLog
+from superbigbank.superbigcore.push_engine.base_data_engine import BaseDataEngine
+from superbigbank.superbigcore.main_engine import MainEngine
+from superbigbank import superbigdata
 
 """
 这个数据类型的创建是为了配合 下面的 strategy_example， 没有其他用途
